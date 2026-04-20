@@ -1,0 +1,19 @@
+services:
+  service-board-nginx:
+    image: csjin21c/nginx:1.29.7-board
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+      platforms: ["linux/amd64", "linux/arm64"]
+    container_name: board-nginx-container
+    restart: always
+    depends_on:
+      - service-board-fastapi
+    ports:
+      - "80:80"
+    networks:
+      - board-network
+
+networks:
+  board-network:
+    driver: bridge

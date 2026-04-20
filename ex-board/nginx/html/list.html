@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>게시판 목록</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+      body {
+        background-color: #f8f9fa;
+        padding-top: 30px;
+      }
+      .table thead {
+        background-color: #212529;
+        color: white;
+        text-align: center;
+      }
+      .subject-link {
+        text-decoration: none;
+        color: #212529;
+        cursor: pointer;
+        font-weight: 500;
+      }
+      .subject-link:hover {
+        color: #007bff;
+        text-decoration: underline;
+      }
+      .table td {
+        vertical-align: middle;
+      }
+      .re-icon {
+        color: #aaa;
+        margin-right: 5px;
+        font-size: 0.8rem;
+      }
+      .new-badge {
+        background-color: #ff4757;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 2px 5px;
+        border-radius: 3px;
+        margin-right: 5px;
+      }
+      .hit-count {
+        font-size: 0.85rem;
+        color: #888;
+        margin-left: 5px;
+        font-weight: normal;
+      }
+
+      /* --- 반응형 UI 제어 (CSS 미디어 쿼리) --- */
+
+      /* 1. PC 환경 (기본값: 더보기 버튼을 완전히 숨김) */
+      .mobile-more {
+        display: none !important;
+      }
+      .pc-pagination {
+        display: block;
+      }
+
+      /* 2. 모바일 환경 (767px 이하) */
+      @media (max-width: 767px) {
+        .pc-pagination {
+          display: none !important;
+        } /* 페이징 숨김 */
+        .mobile-more {
+          display: block !important;
+        } /* 더보기 버튼 표시 */
+
+        /* 모바일 가독성을 위해 번호/작성일 열 숨김 */
+        .col-num,
+        .col-date {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" style="max-width: 850px">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold">게시판 목록</h3>
+        <a href="write.html" class="btn btn-outline-dark shadow-sm">글쓰기</a>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th class="col-num" style="width: 10%">번호</th>
+                  <th style="width: 55%">제목</th>
+                  <th style="width: 15%">작성자</th>
+                  <th class="col-date" style="width: 20%">작성일</th>
+                </tr>
+              </thead>
+              <tbody id="boardList">
+                <tr>
+                  <td colspan="4" class="text-center py-5">
+                    데이터를 불러오는 중...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-footer bg-white py-3 border-top-0">
+          <nav class="pc-pagination">
+            <ul
+              class="pagination justify-content-center mb-0"
+              id="pagination"
+            ></ul>
+          </nav>
+
+          <div id="moreContainer" class="mobile-more text-center">
+            <button
+              id="btnMore"
+              class="btn btn-outline-primary w-100 py-2"
+              onclick="loadNextPage()"
+            >
+              다음 페이지 보기 (더보기)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentPage = 1;
+      const pageSize = 10;
+
+      $(document).ready(function () {
+        loadList(1, false);
+      });
+
+      function loadNextPage() {
+        currentPage++;
+        loadList(currentPage, true);
+      }
+
+      function loadList(page, isAppend) {
+        currentPage = page;
+        $.ajax({
+          url: `/api/board/list?page=${page}`,
+          type: "GET",
+          success: function (res) {
+            // 서버 응답 형태 유연하게 대응 (배열 또는 객체)
+            const data = Array.isArray(res) ? res : res.items || [];
+            const totalCount =
+              res.total_count !== undefined ? res.total_count : data.length;
+
+            let html = "";
+            const now = new Date();
+            const currentYear = now.getFullYear();
+
+            if (data.length === 0 && !isAppend) {
+              html =
+                "<tr><td colspan='4' class='text-center py-5 text-muted'>등록된 게시글이 없습니다.</td></tr>";
+            } else {
+              data.forEach(function (item) {
+                let displayNum = item.fnum === 0 ? "" : item.fnum;
+                let paddingLeft = item.flevel * 20;
+                let reIcon =
+                  item.flevel > 0 ? "<span class='re-icon'>↳</span>" : "";
+                let regDate = new Date(item.fregdate);
+                let mm = ("0" + (regDate.getMonth() + 1)).slice(-2);
+                let dd = ("0" + regDate.getDate()).slice(-2);
+                let dateString =
+                  regDate.getFullYear() === currentYear
+                    ? `${mm}/${dd}`
+                    : `${regDate.getFullYear()}/${mm}/${dd}`;
+                let isNew = (now - regDate) / (1000 * 60 * 60) < 24;
+                let newBadge = isNew ? "<span class='new-badge'>N</span>" : "";
+
+                html += `
+                                <tr>
+                                    <td class="text-center text-muted col-num">${displayNum}</td>
+                                    <td>
+                                        <div style="padding-left: ${paddingLeft}px;">
+                                            ${reIcon}${newBadge}
+                                            <span class="subject-link" onclick="location.href='view.html?idx=${item.fidx}'">
+                                                ${item.fsubject}
+                                            </span>
+                                            <span class="hit-count">[${item.fhit}]</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">${item.fuserName}</td>
+                                    <td class="text-center text-muted col-date" style="font-size: 0.9rem;">${dateString}</td>
+                                </tr>`;
+              });
+            }
+
+            if (isAppend) {
+              $("#boardList").append(html);
+            } else {
+              $("#boardList").html(html);
+              window.scrollTo(0, 0);
+            }
+
+            // PC 페이징 생성 (CSS에서 모바일일 땐 숨김 처리됨)
+            makePagination(totalCount, page, pageSize);
+
+            // 모바일 더보기 버튼 로직 (전체 개수와 현재 표시 개수 비교)
+            let currentShownRows = $("#boardList tr").length;
+            if (currentShownRows < totalCount) {
+              // 데이터가 더 있으면 컨테이너 노출 시도 (CSS 미디어쿼리가 최종 결정)
+              $("#moreContainer").css("opacity", "1");
+            } else {
+              // 데이터가 더 없으면 완전히 숨김
+              $("#moreContainer").attr("style", "display: none !important");
+            }
+          },
+          error: function () {
+            alert("데이터 로드 실패");
+          },
+        });
+      }
+
+      function makePagination(totalCount, currPage, size) {
+        let totalPages = Math.ceil(totalCount / size);
+        let html = "";
+        if (totalPages <= 1) {
+          $("#pagination").empty();
+          return;
+        }
+
+        let startPage = Math.floor((currPage - 1) / 5) * 5 + 1;
+        let endPage = Math.min(startPage + 4, totalPages);
+
+        if (startPage > 1) {
+          html += `<li class="page-item"><a class="page-link" href="javascript:loadList(${
+            startPage - 1
+          }, false)">&laquo;</a></li>`;
+        }
+        for (let i = startPage; i <= endPage; i++) {
+          let active = i === currPage ? "active" : "";
+          html += `<li class="page-item ${active}"><a class="page-link" href="javascript:loadList(${i}, false)">${i}</a></li>`;
+        }
+        if (endPage < totalPages) {
+          html += `<li class="page-item"><a class="page-link" href="javascript:loadList(${
+            endPage + 1
+          }, false)">&raquo;</a></li>`;
+        }
+        $("#pagination").html(html);
+      }
+    </script>
+  </body>
+</html>

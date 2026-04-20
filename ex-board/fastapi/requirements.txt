@@ -1,0 +1,19 @@
+# Web Framework & Server
+fastapi
+uvicorn[standard]
+
+# Data Validation
+pydantic
+
+# Database Driver
+pymysql
+
+# SSH Tunneling
+sshtunnel
+cryptography
+
+# AWS SDK (Secrets Manager 연동 대비)
+boto3
+
+# Environment Variables Management
+python-dotenv

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>게시판 글쓰기</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
+    <style>
+      body {
+        background-color: #f8f9fa;
+        padding-top: 50px;
+        padding-bottom: 50px;
+      }
+      .card {
+        border: none;
+        border-radius: 15px;
+      }
+      .card-header {
+        border-radius: 15px 15px 0 0 !important;
+      }
+      /* 에디터 배경색 흰색 고정 */
+      .note-editable {
+        background-color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" style="max-width: 900px">
+      <div class="card shadow">
+        <div class="card-header bg-dark text-white text-center py-3">
+          <h5 class="mb-0">새 게시글 작성</h5>
+        </div>
+        <div class="card-body p-4">
+          <form id="boardForm">
+            <input type="hidden" name="p_key" value="0" />
+            <input type="hidden" name="p_level" value="0" />
+            <input type="hidden" name="p_step" value="0" />
+            <input type="hidden" name="p_hit" value="0" />
+            <input type="hidden" name="p_userId" value="guest_user" />
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">작성자</label>
+                <input
+                  type="text"
+                  name="p_userName"
+                  class="form-control"
+                  placeholder="이름 입력"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">비밀번호</label>
+                <input
+                  type="password"
+                  name="p_passwd"
+                  class="form-control"
+                  placeholder="비밀번호 입력"
+                  required
+                />
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-bold">제목</label>
+                <input
+                  type="text"
+                  name="p_subject"
+                  class="form-control"
+                  placeholder="제목을 입력해 주세요"
+                  required
+                />
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-bold">내용</label>
+                <textarea id="summernote" name="p_content"></textarea>
+              </div>
+
+              <div class="col-12 d-grid gap-2 mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                  등록하기
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="location.href = 'list.html'"
+                >
+                  돌아가기
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        // 1. URL 파라미터 확인 및 hidden 필드 설정 (답변 기능용)
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get("mode");
+
+        if (mode === "reply") {
+          // 답변 모드일 때 전달받은 값을 hidden 필드에 할당
+          $("input[name='p_key']").val(urlParams.get("p_key") || "0");
+          $("input[name='p_level']").val(urlParams.get("p_level") || "0");
+          $("input[name='p_step']").val(urlParams.get("p_step") || "0");
+
+          // UI 변경: 제목 및 버튼 텍스트 변경
+          $(".card-header h5").text("답변 작성");
+          $("button[type='submit']").text("답변 등록하기");
+
+          // 선택사항: 제목 앞에 [Re] 등을 자동으로 붙여줄 수도 있습니다.
+          // $("input[name='p_subject']").val(" [Re]: ");
+        }
+
+        // 2. Summernote 초기화
+        $("#summernote").summernote({
+          placeholder: "내용을 입력해 주세요 (표 삽입, 이미지 가능)",
+          tabsize: 2,
+          height: 400,
+          lang: "ko-KR",
+          toolbar: [
+            ["style", ["style"]],
+            ["font", ["bold", "underline", "clear"]],
+            ["color", ["color"]],
+            ["para", ["ul", "ol", "paragraph"]],
+            ["table", ["table"]],
+            ["insert", ["link", "picture", "video"]],
+            ["view", ["fullscreen", "codeview", "help"]],
+          ],
+        });
+
+        // 3. 폼 제출 처리
+        $("#boardForm").on("submit", function (e) {
+          e.preventDefault();
+
+          if ($("#summernote").summernote("isEmpty")) {
+            alert("내용을 입력해 주세요.");
+            return;
+          }
+
+          const data = {};
+          const formData = $(this).serializeArray();
+
+          // hidden 필드에 담긴 값들을 포함하여 데이터 구성
+          formData.forEach((item) => (data[item.name] = item.value));
+
+          // Summernote의 HTML 코드를 p_content에 할당
+          data["p_content"] = $("#summernote").summernote("code");
+
+          $.ajax({
+            url: "/api/board/append",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function (res) {
+              // 응답값 처리 (1 혹은 {result: 1} 등 서버 응답에 맞춰 조절)
+              if (res === 1 || res.result === 1 || res.status === "success") {
+                alert("성공적으로 등록되었습니다.");
+                location.href = "list.html";
+              } else {
+                alert("등록 실패: " + (res.error || "서버 응답 오류"));
+              }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+              // res.get() -> xhr.status 등으로 수정 (문법 오류 해결)
+              console.error(xhr);
+              alert("서버 통신 오류: " + xhr.status + " " + errorThrown);
+            },
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

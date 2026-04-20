@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>비밀번호 확인</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+      body {
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      .pass-card {
+        max-width: 400px;
+        width: 100%;
+        border: none;
+        border-radius: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card pass-card shadow">
+      <div class="card-body p-4 text-center">
+        <h4 class="fw-bold mb-3">비밀번호 확인</h4>
+        <p id="guideText" class="text-muted mb-4">
+          게시글을 처리하려면 비밀번호를 입력하세요.
+        </p>
+
+        <input
+          type="password"
+          id="fpassword"
+          class="form-control form-control-lg mb-3 text-center"
+          placeholder="비밀번호 입력"
+        />
+
+        <div class="d-grid gap-2">
+          <button id="btnSubmit" class="btn btn-lg" onclick="handleProcess()">
+            확인
+          </button>
+          <button class="btn btn-light" onclick="history.back()">취소</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const idx = urlParams.get("idx");
+      const mode = urlParams.get("mode"); // 'modify' 또는 'delete'
+
+      $(document).ready(function () {
+        // 모드에 따라 UI 변경
+        if (mode === "modify") {
+          $("#guideText").text("게시글을 수정하려면 비밀번호를 입력하세요.");
+          $("#btnSubmit").text("수정하기").addClass("btn-primary");
+        } else {
+          $("#guideText").text("게시글을 삭제하려면 비밀번호를 입력하세요.");
+          $("#btnSubmit").text("삭제하기").addClass("btn-danger");
+        }
+      });
+
+      // 통합 처리 함수
+      function handleProcess() {
+        const password = $("#fpassword").val();
+
+        if (!password) {
+          alert("비밀번호를 입력해주세요.");
+          return;
+        }
+
+        if (mode === "modify") {
+          // [수정 모드] 비밀번호 확인만 하고 수정 페이지로 이동
+          verifyPassword(password);
+        } else {
+          // [삭제 모드] 실제 삭제 처리
+          if (confirm("정말 이 게시글을 삭제하시겠습니까?")) {
+            deletePost(password);
+          }
+        }
+      }
+
+      // 1. 수정 전용: 비밀번호 검증 API 호출
+      function verifyPassword(password) {
+        $.ajax({
+          url: `/api/board/verify-password/${idx}`,
+          type: "POST",
+          data: JSON.stringify({ password: password }),
+          contentType: "application/json",
+          success: function (res) {
+            if (res.result === "success") {
+              // 성공 시 수정 폼으로 이동
+              location.href = `modify.html?idx=${idx}`;
+            } else {
+              alert(res.message || "비밀번호가 일치하지 않습니다.");
+            }
+          },
+          error: function () {
+            alert("통신 중 오류가 발생했습니다.");
+          },
+        });
+      }
+
+      // 2. 삭제 전용: 실제 삭제 API 호출
+      function deletePost(password) {
+        $.ajax({
+          url: `/api/board/delete/${idx}`,
+          type: "POST",
+          data: JSON.stringify({ password: password }),
+          contentType: "application/json",
+          success: function (res) {
+            if (res.result === "success") {
+              alert("삭제되었습니다.");
+              location.href = "list.html";
+            } else {
+              alert(res.message || "비밀번호가 일치하지 않습니다.");
+            }
+          },
+          error: function () {
+            alert("삭제 중 오류가 발생했습니다.");
+          },
+        });
+      }
+
+      // 엔터키 처리
+      $("#fpassword").on("keypress", function (e) {
+        if (e.which == 13) handleProcess();
+      });
+    </script>
+  </body>
+</html>

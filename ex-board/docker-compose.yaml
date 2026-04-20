@@ -1,0 +1,62 @@
+services:
+  # 1. Database 서비스 (MySQL)
+  service-board-mysql:
+    image: csjin21c/mysql:8.0-board
+    build:
+      context: ./mysql # MySQL 관련 파일(Dockerfile, init.sql 등)이 있는 경로
+      dockerfile: Dockerfile
+      platforms: ["linux/amd64", "linux/arm64"]
+    container_name: mysql-primary-container
+    restart: unless-stopped # always(도커 엔진이 시작되면 컨테이너 재시작), unless-stopped(임의 정지시킨 컨테이너는 재시작에서 제외)
+    environment:
+      MYSQL_ROOT_PASSWORD: "ian1234!"
+      MYSQL_DATABASE: "iandb"
+      MYSQL_USER: "ian"
+      MYSQL_PASSWORD: "ian1234!"
+      TZ: "Asia/Seoul"
+    ports:
+      - "3306:3306"
+    networks:
+      - board-network
+
+  # 2. Application 서비스 (FastAPI)
+  service-board-fastapi:
+    image: csjin21c/fastapi:board-proxy
+    build:
+      context: ./fastapi # FastAPI Dockerfile이 있는 현재 경로
+      dockerfile: Dockerfile
+      platforms: ["linux/amd64", "linux/arm64"]
+    container_name: board-fastapi-container
+    restart: always
+    depends_on:
+      - service-board-mysql
+    environment:
+      # 코드 내 DB_INFO["host"]를 'my-service-db'로 설정해야 합니다.
+      DB_HOST: "mysql-primary-container"
+      DB_USER: "dev"
+      DB_PASSWORD: "dev1234!"
+      DB_NAME: "iandb"
+    ports:
+      - "8000:8000"
+    networks:
+      - board-network
+
+  # 3. Web 서비스 (Nginx)
+  service-board-nginx:
+    image: csjin21c/nginx:1.29.7-board
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+      platforms: ["linux/amd64", "linux/arm64"]
+    container_name: board-nginx-container
+    restart: always
+    depends_on:
+      - service-board-fastapi
+    ports:
+      - "80:80"
+    networks:
+      - board-network
+
+networks:
+  board-network:
+    driver: bridge

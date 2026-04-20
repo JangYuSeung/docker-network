@@ -1,0 +1,55 @@
+# Environment variables (sensitive data)
+.env
+.env.local
+.env.*.local
+*.env
+
+# Credentials and secrets
+.ssh/
+SSH_KEY
+credentials/
+secrets/
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+*.out
+
+# Docker
+.docker/
+volumes/
+data/
+
+# Node/Python artifacts
+node_modules/
+__pycache__/
+*.pyc
+venv/
+env/
+.venv/
+
+# Temporary files
+*.tmp
+*.bak
+*~
+.tmp/
+
+# Local overrides
+docker-compose.local.yaml
+docker-compose.override.yaml

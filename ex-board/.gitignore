@@ -1,0 +1,4 @@
+# Never commit environment files with real passwords
+.env
+.env.local
+.env.*.local

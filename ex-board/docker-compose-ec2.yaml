@@ -8,11 +8,11 @@ services:
     container_name: mysql-primary-container
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: "ian1234!"
-      MYSQL_DATABASE: "iandb"
-      MYSQL_USER: "ian"
-      MYSQL_PASSWORD: "ian1234!"
-      TZ: "Asia/Seoul"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: ${MYSQL_TZ:-Asia/Seoul}
     ports:
       - "3306:3306"
     networks:
@@ -29,10 +29,10 @@ services:
     depends_on:
       - service-board-mysql
     environment:
-      DB_HOST: "mysql-primary-container"
-      DB_USER: "dev"
-      DB_PASSWORD: "dev1234!"
-      DB_NAME: "iandb"
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
     ports:
       - "8000:8000"
     networks:

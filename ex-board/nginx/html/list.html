@@ -147,7 +147,7 @@
       function loadList(page, isAppend) {
         currentPage = page;
         $.ajax({
-          url: `/api/board/list?page=${page}`,
+          url: `http://gcp.reoyuza.cloud/api/board/list?page=${page}`,
           type: "GET",
           success: function (res) {
             // 서버 응답 형태 유연하게 대응 (배열 또는 객체)

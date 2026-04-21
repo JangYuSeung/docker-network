@@ -88,14 +88,14 @@
       // 1. 수정 전용: 비밀번호 검증 API 호출
       function verifyPassword(password) {
         $.ajax({
-          url: `/api/board/verify-password/${idx}`,
+          url: `http://gcp.reoyuza.cloud/api/board/verify-password/${idx}`,
           type: "POST",
           data: JSON.stringify({ password: password }),
           contentType: "application/json",
           success: function (res) {
             if (res.result === "success") {
               // 성공 시 수정 폼으로 이동
-              location.href = `modify.html?idx=${idx}`;
+              location.href = `http://gcp.reoyuza.cloud/modify.html?idx=${idx}`;
             } else {
               alert(res.message || "비밀번호가 일치하지 않습니다.");
             }
@@ -109,14 +109,14 @@
       // 2. 삭제 전용: 실제 삭제 API 호출
       function deletePost(password) {
         $.ajax({
-          url: `/api/board/delete/${idx}`,
+          url: `http://gcp.reoyuza.cloud/api/board/delete/${idx}`,
           type: "POST",
           data: JSON.stringify({ password: password }),
           contentType: "application/json",
           success: function (res) {
             if (res.result === "success") {
               alert("삭제되었습니다.");
-              location.href = "list.html";
+              location.href = "http://gcp.reoyuza.cloud/list.html";
             } else {
               alert(res.message || "비밀번호가 일치하지 않습니다.");
             }

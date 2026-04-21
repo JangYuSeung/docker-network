@@ -107,7 +107,7 @@
 
         // 2. 서버에 데이터 요청
         $.ajax({
-          url: `/api/board/view/${fidx}`,
+          url: `http://gcp.reoyuza.cloud/api/board/view/${fidx}`,
           type: "GET",
           success: function (data) {
             if (data && !data.error) {

@@ -1,3 +1,4 @@
+# GCP docker compose 실습용 => 이 파일이 깃허브 레포에 올라가 있어야 함
 services:
   service-board-mysql:
     image: reoyuza/mysql-board:latest

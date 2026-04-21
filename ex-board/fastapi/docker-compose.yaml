@@ -1,0 +1,25 @@
+services:
+  service-fastapi:
+    image: csjin21c/fastapi:proxy-board
+    build:
+      context: . # FastAPI Dockerfile이 있는 현재 경로
+      dockerfile: Dockerfile
+      platforms: ["linux/amd64", "linux/arm64"]
+    container_name: fastapi-container
+    restart: always
+    depends_on: # 같은 파일 내에 정의된 DB가 먼저 실행된 후 앱 실행
+      - mysql-primary-container
+    environment:
+      # 코드 내 DB_INFO["host"]를 'my-service-db'로 설정해야 합니다.
+      DB_HOST: "mysql-primary-container"
+      DB_USER: "dev"
+      DB_PASSWORD: "dev1234!"
+      DB_NAME: "iandb"
+    ports:
+      - "8000:8000"
+    networks:
+      - board-network
+
+networks:
+  board-network:
+    driver: bridge

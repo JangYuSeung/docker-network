@@ -1,0 +1,46 @@
+services:
+  service-board-mysql:
+    image: reoyuza/mysql-board:latest
+    container_name: mysql-primary-container
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 
+      MYSQL_DATABASE: 
+      MYSQL_USER: 
+      MYSQL_PASSWORD: 
+      TZ: Asia/Seoul
+    ports:
+      - 3306:3306
+    networks:
+      - board-network
+
+  service-board-fastapi:
+    image: reoyuza/fastapi-board:latest
+    container_name: board-fastapi-container
+    restart: always
+    depends_on:
+      - service-board-mysql
+    environment:
+      DB_HOST: 
+      DB_USER: 
+      DB_PASSWORD: 
+      DB_NAME: 
+    ports:
+      - 8000:8000
+    networks:
+      - board-network
+
+  service-board-nginx:
+    image: reoyuza/nginx-board:latest
+    container_name: board-nginx-container
+    restart: always
+    depends_on:
+      - service-board-fastapi
+    ports:
+      - 80:80
+    networks:
+      - board-network
+
+networks:
+  board-network:
+    driver: bridge

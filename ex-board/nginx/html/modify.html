@@ -127,7 +127,7 @@
 
         // 2. 기존 데이터 로드
         if (idx) {
-          $.get(`http://gcp.reoyuza.cloud/api/board/view/${idx}`, function (data) {
+          $.get(`/api/board/view/${idx}`, function (data) {
             if (data.error) {
               alert(data.error);
               location.href = "list.html";
@@ -165,7 +165,7 @@
         };
 
         $.ajax({
-          url: `http://gcp.reoyuza.cloud/api/board/update/${idx}`,
+          url: `/api/board/update/${idx}`,
           type: "POST",
           contentType: "application/json",
           data: JSON.stringify(updateData),

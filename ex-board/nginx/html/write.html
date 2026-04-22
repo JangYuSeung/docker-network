@@ -160,7 +160,7 @@
           data["p_content"] = $("#summernote").summernote("code");
 
           $.ajax({
-            url: "http://gcp.reoyuza.cloud/api/board/append",
+            url: "/api/board/append",
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify(data),
@@ -168,7 +168,7 @@
               // 응답값 처리 (1 혹은 {result: 1} 등 서버 응답에 맞춰 조절)
               if (res === 1 || res.result === 1 || res.status === "success") {
                 alert("성공적으로 등록되었습니다.");
-                location.href = "http://gcp.reoyuza.cloud/list.html";
+                location.href = "/list.html";
               } else {
                 alert("등록 실패: " + (res.error || "서버 응답 오류"));
               }

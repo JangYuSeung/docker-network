@@ -5,10 +5,10 @@ services:
     container_name: mysql-primary-container
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: 
-      MYSQL_DATABASE: 
-      MYSQL_USER: 
-      MYSQL_PASSWORD: 
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TZ: Asia/Seoul
     ports:
       - 3306:3306
@@ -22,10 +22,10 @@ services:
     depends_on:
       - service-board-mysql
     environment:
-      DB_HOST: 
-      DB_USER: 
-      DB_PASSWORD: 
-      DB_NAME: 
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
     ports:
       - 8000:8000
     networks:
